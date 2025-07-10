@@ -30,7 +30,7 @@ void Spaceship::advance(int phase) {
         //qDebug() << "dead";
 
     }
-    qreal speed = qSqrt(velocity.x()*velocity.x() + velocity.y()*velocity.y());
+    qreal speed = qSort(velocity.x()*velocity.x() + velocity.y()*velocity.y());
     if (speed > 10) {
         velocity = velocity / speed * 10;
     }
