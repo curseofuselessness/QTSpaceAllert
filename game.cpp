@@ -2,6 +2,7 @@
 #include "deathdialog.h"
 #include <QDebug>
 #include<ctime>
+#include <QRandomGenerator>
 
 Spaceship::Spaceship(const QPixmap& normal, const QPixmap& thrusting)
     : normalPixmap(normal), thrustingPixmap(thrusting) {
@@ -65,6 +66,30 @@ void Spaceship::advance(int phase) {
     }
 }
 
+Meteor::Meteor(const QPixmap& pixmap) : QGraphicsPixmapItem(pixmap) {
+    setTransformOriginPoint(boundingRect().center());
+
+    // Устанавливаем случайное направление и скорость
+    qreal angle = QRandomGenerator::global()->bounded(360);
+    qreal speed = QRandomGenerator::global()->bounded(1, 5) * 0.1;
+
+    velocity = QPointF(speed * cos(angle * M_PI / 180),
+    speed * sin(angle * M_PI / 180));
+
+    // Устанавливаем случайный угол поворота
+    setRotation(QRandomGenerator::global()->bounded(360));
+}
+
+void Meteor::advance(int phase) {
+    if (!phase) return;
+
+    velocity *= friction;
+    setPos(pos() + velocity);
+
+    // Метеор медленно вращается
+    setRotation(rotation() + 0.5);
+}
+
 void Spaceship::setThrusting(bool thrusting) { this->thrusting = thrusting; }
 void Spaceship::rotateLeft() {
    rotation -= rotationSpeed;
@@ -86,7 +111,13 @@ GameScene::GameScene(QObject* parent) : QGraphicsScene(parent) {
 
     spaceship = new Spaceship(normalShip, thrustingShip);
     addItem(spaceship);
-    spaceship->setPos(width()/2, height()/2);
+    spaceship->setPos(960, 540);
+
+    QPixmap meteorPixmap("png-transparent-paper-asteroid-sticker-adhesive-planet-asteroid-child-sleep-slate-thumbnail.png"); // путь к изображению метеора
+    meteor = new Meteor(meteorPixmap);
+    meteor->setPos(width() / 2, height() / 2); // или любая другая начальная позиция
+    addItem(meteor);
+
     // Создаем звездное небо
     srand(time(0));
     for (int i = 0; i < 1000; ++i) {
@@ -101,14 +132,13 @@ GameScene::GameScene(QObject* parent) : QGraphicsScene(parent) {
     timer->start(16);
 }
 
+
 void GameScene::keyPressEvent(QKeyEvent* event) {
     switch (event->key()) {
     case Qt::Key_Left: spaceship->rotateLeft(); break;
     case Qt::Key_Right: spaceship->rotateRight(); break;
     case Qt::Key_Space: spaceship->setThrusting(true); break;
-    case Qt::Key_Escape:
-        setPaused(!isPaused);
-          break;
+    case Qt::Key_Escape: setPaused(!isPaused); break;
     }
 }
 

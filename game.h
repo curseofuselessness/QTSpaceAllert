@@ -22,8 +22,6 @@ public:
     void rotateLeft();
     void rotateRight();
 
-
-
 private:
 
     QPixmap normalPixmap;
@@ -32,10 +30,20 @@ private:
     qreal rotation = 0;
     qreal thrust = 0.2;
     qreal targetRotation = 0;
-    qreal rotationAccuracy = 0.01;
+    qreal rotationAccuracy = 0.001;
     qreal rotationSpeed = 15;
     qreal friction = 0.999;
     bool thrusting = false;
+};
+
+class Meteor : public QGraphicsPixmapItem {
+public:
+    Meteor(const QPixmap& pixmap);
+    void advance(int phase) override;
+
+private:
+    QPointF velocity;
+    qreal friction = 0.999;
 };
 
 class GameScene : public QGraphicsScene {
@@ -53,6 +61,7 @@ private:
 
 
     Spaceship* spaceship;
+    Meteor* meteor; // Добавлен метеор
 };
 
 #endif // PAINT_WINDOW_H
