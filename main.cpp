@@ -16,7 +16,6 @@ int main(int argc, char *argv[]) {
     view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff); // Убрать горизонтальный скролл
     view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);   // Убрать вертикальный скролл
     view.setBackgroundBrush(Qt::black);
-    view.setWindowTitle("QTSpaceAllert");
     view.show();
 
     return a.exec();

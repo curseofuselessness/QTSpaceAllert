@@ -1,4 +1,5 @@
 #include "game.h"
+#include "deathdialog.h"
 #include <QDebug>
 #include<ctime>
 
@@ -8,6 +9,25 @@ Spaceship::Spaceship(const QPixmap& normal, const QPixmap& thrusting)
     setTransformOriginPoint(boundingRect().center());
     this->setZValue(2);
 
+}
+
+void GameScene::setPaused(bool paused) {
+    isPaused = paused;
+    if (paused) {
+        // Останавливаем все таймеры
+        foreach (QTimer *timer, findChildren<QTimer*>()) {
+            timer->stop();
+        }
+    } else {
+        // Возобновляем таймеры
+        foreach (QTimer *timer, findChildren<QTimer*>()) {
+            timer->start(16);
+        }
+    }
+}
+
+void GameScene::gameOver(){
+    setPaused(true);
 }
 
 void Spaceship::advance(int phase) {
@@ -26,8 +46,17 @@ void Spaceship::advance(int phase) {
 
     velocity *= friction;
     setPos(pos() + velocity);
-    if(pos().x()<0 or pos().y()<0 or pos().x() > 1920 or pos().y()>1080){
+    if(pos().x()<-800 or pos().y()<-800 or pos().x() > 1920 or pos().y()>1080){ // Странно, тут нужно писать -800 так как размер картинки 800
         //qDebug() << "dead";
+        DeathDialog dialog("ПОТЕРЯН В КОСМОСЕ");
+        GameScene obj;
+
+        obj.setPaused(!obj.isPaused);
+        if (dialog.exec() == QDialog::Accepted) {
+            QCoreApplication::quit();
+        }
+
+
 
     }
     qreal speed = qSqrt(velocity.x()*velocity.x() + velocity.y()*velocity.y());
@@ -38,7 +67,6 @@ void Spaceship::advance(int phase) {
 
 void Spaceship::setThrusting(bool thrusting) { this->thrusting = thrusting; }
 void Spaceship::rotateLeft() {
-
    rotation -= rotationSpeed;
 
 }
@@ -68,7 +96,6 @@ GameScene::GameScene(QObject* parent) : QGraphicsScene(parent) {
         addItem(star);
     }
 
-
     QTimer* timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &GameScene::advance);
     timer->start(16);
@@ -79,7 +106,9 @@ void GameScene::keyPressEvent(QKeyEvent* event) {
     case Qt::Key_Left: spaceship->rotateLeft(); break;
     case Qt::Key_Right: spaceship->rotateRight(); break;
     case Qt::Key_Space: spaceship->setThrusting(true); break;
-    case Qt::Key_Escape: setPaused(!isPaused); break;
+    case Qt::Key_Escape:
+        setPaused(!isPaused);
+          break;
     }
 }
 
@@ -87,25 +116,5 @@ void GameScene::keyReleaseEvent(QKeyEvent* event) {
     if (event->key() == Qt::Key_Space) {
         spaceship->setThrusting(false);
     }
-}
-
-void GameScene::setPaused(bool paused) {
-    isPaused = paused;
-    if (paused) {
-        // Останавливаем все таймеры
-        foreach (QTimer *timer, findChildren<QTimer*>()) {
-            timer->stop();
-        }
-    } else {
-        // Возобновляем таймеры
-        foreach (QTimer *timer, findChildren<QTimer*>()) {
-            timer->start(16);
-        }
-    }
-}
-
-void GameScene::gameOver(){
-    setPaused(true);
-
 }
 

@@ -2,5 +2,6 @@
     <qresource prefix="/new/prefix1">
         <file>spaceship_normal.png</file>
         <file>spaceship_thrusting.png</file>
+        <file>deathMenu_logo.png</file>
     </qresource>
 </RCC>

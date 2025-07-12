@@ -7,6 +7,12 @@
 #include <QGraphicsPixmapItem>
 #include <QKeyEvent>
 #include <QTimer>
+#include <QLabel>
+#include <QPushButton>
+#include <QVBoxLayout>
+#include <QDialog>
+#include <QPropertyAnimation>
+
 
 class Spaceship : public QGraphicsPixmapItem {
 public:
@@ -17,7 +23,9 @@ public:
     void rotateRight();
 
 
+
 private:
+
     QPixmap normalPixmap;
     QPixmap thrustingPixmap;
     QPointF velocity;
@@ -35,12 +43,15 @@ public:
     GameScene(QObject* parent = nullptr);
     bool isPaused = false;
     void setPaused(bool);
+    void gameOver();
 
 protected:
     void keyPressEvent(QKeyEvent* event) override;
     void keyReleaseEvent(QKeyEvent* event) override;
-    void gameOver();
+
 private:
+
+
     Spaceship* spaceship;
 };
 
