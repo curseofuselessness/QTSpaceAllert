@@ -138,6 +138,7 @@ void GameScene::keyPressEvent(QKeyEvent* event) {
     case Qt::Key_Left: spaceship->rotateLeft(); break;
     case Qt::Key_Right: spaceship->rotateRight(); break;
     case Qt::Key_Space: spaceship->setThrusting(true); break;
+    case Qt::Key_Up: spaceship->setThrusting(true); break;
     case Qt::Key_Escape: setPaused(!isPaused); break;
     }
 }
