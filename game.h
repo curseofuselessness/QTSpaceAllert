@@ -36,10 +36,11 @@ class Meteor : public QGraphicsPixmapItem {
 public:
     Meteor(const QPixmap& pixmap);
     void advance(int phase) override;
+    void checkBounds();
 
 private:
     QPointF velocity;
-    qreal friction = 0.999;
+    QRectF sceneRect;
 };
 
 class GameScene : public QGraphicsScene {

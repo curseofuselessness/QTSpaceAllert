@@ -42,23 +42,67 @@ Meteor::Meteor(const QPixmap& pixmap) : QGraphicsPixmapItem(pixmap) {
 
     // Устанавливаем случайное направление и скорость
     qreal angle = QRandomGenerator::global()->bounded(360);
-    qreal speed = QRandomGenerator::global()->bounded(1, 5) * 0.1;
+    qreal speed = QRandomGenerator::global()->bounded(5, 10);
 
     velocity = QPointF(speed * cos(angle * M_PI / 180),
     speed * sin(angle * M_PI / 180));
 
-    // Устанавливаем случайный угол поворота
+    sceneRect = QRectF(0, 0, 1920, 1080);
     setRotation(QRandomGenerator::global()->bounded(360));
+
+}
+
+void Meteor::checkBounds() {
+    QPointF newPos = pos();
+    qreal width = boundingRect().width();
+    qreal height = boundingRect().height();
+    bool changedDirection = false;
+
+    // Проверка правой границы
+    if (newPos.x() > sceneRect.right() - width/2) {
+        newPos.setX(sceneRect.right() - width/2);
+        velocity.setX(-velocity.x());  // Отражаем по X
+        changedDirection = true;
+    }
+    // Проверка левой границы
+    else if (newPos.x() < sceneRect.left() - width/2) {
+        newPos.setX(sceneRect.left() - width/2);
+        velocity.setX(-velocity.x());  // Отражаем по X
+        changedDirection = true;
+    }
+
+    // Проверка нижней границы
+    if (newPos.y() > sceneRect.bottom() - height/2) {
+        newPos.setY(sceneRect.bottom() - height/2);
+        velocity.setY(-velocity.y());  // Отражаем по Y
+        changedDirection = true;
+    }
+    // Проверка верхней границы
+    else if (newPos.y() < sceneRect.top() - height/2) {
+        newPos.setY(sceneRect.top() - height/2);
+        velocity.setY(-velocity.y());  // Отражаем по Y
+        changedDirection = true;
+    }
+
+    if (changedDirection) {
+        //Случайное изменение направления
+        qreal angleVariation = QRandomGenerator::global()->bounded(30) - 15; // ±15 градусов
+        qreal newAngle = atan2(velocity.y(), velocity.x()) + angleVariation * M_PI/180;
+        qreal speed = sqrt(velocity.x()*velocity.x() + velocity.y()*velocity.y());
+        velocity = QPointF(cos(newAngle) * speed, sin(newAngle) * speed);
+    }
+
+    setPos(newPos);
 }
 
 void Meteor::advance(int phase) {
     if (!phase) return;
 
-    velocity *= friction;
     setPos(pos() + velocity);
-
-    // Метеор медленно вращается
     setRotation(rotation() + 0.5);
+
+    checkBounds();
+
 }
 
 void Spaceship::setThrusting(bool thrusting) { this->thrusting = thrusting; }
@@ -85,9 +129,9 @@ GameScene::GameScene(QObject* parent) : QGraphicsScene(parent) {
     addItem(spaceship);
     spaceship->setPos(960, 540);
 
-    QPixmap meteorPixmap("png-transparent-paper-asteroid-sticker-adhesive-planet-asteroid-child-sleep-slate-thumbnail.png"); // путь к изображению метеора
+    QPixmap meteorPixmap("meteor.png");
     meteor = new Meteor(meteorPixmap);
-    meteor->setPos(width() / 2, height() / 2); // или любая другая начальная позиция
+    meteor->setPos(860, 540);
     addItem(meteor);
 
     // Создаем звездное небо
@@ -98,6 +142,7 @@ GameScene::GameScene(QObject* parent) : QGraphicsScene(parent) {
         star->setPos(rand() % 1920, rand() % 1080);
         addItem(star);
     }
+
 
 
     QTimer* timer = new QTimer(this);
