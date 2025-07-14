@@ -13,7 +13,15 @@
 #include <QDialog>
 #include <QPropertyAnimation>
 
+class Starting_menu : public QGraphicsPixmapItem {
+public:
+    Starting_menu(const QPixmap& pxmp);
 
+private:
+
+    QPixmap Starting_menu_pic;
+
+};
 class Spaceship : public QGraphicsPixmapItem {
 public:
     Spaceship(const QPixmap& normal, const QPixmap& thrusting);
@@ -59,7 +67,7 @@ protected:
 
 private:
 
-
+    Starting_menu* menu_obj;
     Spaceship* spaceship;
     Meteor* meteor; // Добавлен метеор
 };

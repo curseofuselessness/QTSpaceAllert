@@ -13,17 +13,14 @@ RESOURCES += resources.qrc \
 
 SOURCES += \
     game.cpp \
-    main.cpp \
-    mainwindow.cpp
+    main.cpp
 
 HEADERS += \
     deathdialog.h \
-    game.h \
-    mainwindow.h
+    game.h
 
 FORMS += \
-    deathdialog.ui \
-    mainwindow.ui
+    deathdialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
