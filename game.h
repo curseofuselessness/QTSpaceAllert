@@ -41,6 +41,7 @@ public:
 private:
     QPointF velocity;
     QRectF sceneRect;
+
 };
 
 class GameScene : public QGraphicsScene {
@@ -48,11 +49,13 @@ public:
     GameScene(QObject* parent = nullptr);
     bool isPaused = false;
     void setPaused(bool);
+    QList<Meteor*> meteors;
 
 protected:
     void keyPressEvent(QKeyEvent* event) override;
     void keyReleaseEvent(QKeyEvent* event) override;
     void gameOver();
+    void spawnMeteor();
 private:
     Spaceship* spaceship;
     Meteor* meteor; // Добавлен метеор

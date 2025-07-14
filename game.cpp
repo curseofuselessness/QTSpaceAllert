@@ -129,10 +129,16 @@ GameScene::GameScene(QObject* parent) : QGraphicsScene(parent) {
     addItem(spaceship);
     spaceship->setPos(960, 540);
 
-    QPixmap meteorPixmap("meteor.png");
-    meteor = new Meteor(meteorPixmap);
-    meteor->setPos(860, 540);
-    addItem(meteor);
+    QTimer* spawnTimer = new QTimer(this);
+    connect(spawnTimer, &QTimer::timeout, this, [this]() {
+        if (meteors.size() < 10) {
+            spawnMeteor();
+        }
+    });
+    spawnTimer->start(3000);  // Новый метеор каждые 3 секунды
+
+
+
 
     // Создаем звездное небо
     srand(time(0));
@@ -180,6 +186,39 @@ void GameScene::setPaused(bool paused) {
             timer->start(16);
         }
     }
+}
+void GameScene::spawnMeteor() {
+    QPixmap meteorPixmap("meteor.png");
+    meteor = new Meteor(meteorPixmap);
+
+    int MeteorPosition = QRandomGenerator::global()->bounded(1, 4);
+    int x = 0;
+    int y = 0;
+    switch(MeteorPosition) {
+    case 1:
+        x = 0;
+        y = QRandomGenerator::global()->bounded(0, 1080);
+        meteor->setPos(x, y);
+        break;
+    case 2:
+        y = 0;
+        x = QRandomGenerator::global()->bounded(0, 1920);
+        meteor->setPos(x, y);
+        break;
+    case 3:
+        x = 1920;
+        y = QRandomGenerator::global()->bounded(0, 1080);
+        meteor->setPos(x, y);
+        break;
+    case 4:
+        y = 1080;
+        x = QRandomGenerator::global()->bounded(0, 1920);
+        meteor->setPos(x, y);
+        break;
+    }
+    addItem(meteor);
+    meteors.append(meteor);
+
 }
 
 void GameScene::gameOver(){
