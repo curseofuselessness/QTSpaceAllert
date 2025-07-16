@@ -33,6 +33,15 @@ void Spaceship::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
     painter->drawPath(shape());
 */
 }
+void Blackhole::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    QGraphicsPixmapItem::paint(painter, option, widget);
+    QPen *pen = new QPen(Qt::blue);
+    pen->setWidth(5);
+    painter->setPen(*pen);
+    painter->drawPath(shape());
+}
+
 Blackhole::Blackhole(const QPixmap &blackholepic) : QGraphicsPixmapItem(blackholepic)
 {
     setTransformOriginPoint(boundingRect().center());
@@ -50,12 +59,34 @@ void Blackhole::advance(int phase) {
             qreal dy = ship->pos().y()- pos().y();
             qreal distance = qSqrt(dx*dx + dy*dy);
             QPointF blackhole_velocity(-1*dx, -1*dy);
-            ship->velocity = ship->velocity + 20 / (distance*distance) * blackhole_velocity;
+            ship->velocity = ship->velocity +  30 / (distance * distance) * blackhole_velocity;
+            if (collidesWithItem(ship)) {
+                DeathDialog dialog("ЗАСОСАЛО В ЧЕРНУЮ ДЫРУ");
+                GameScene obj;
+
+
+                obj.setPaused(true);
+                if (dialog.exec() == QDialog::Accepted) {
+                    QCoreApplication::quit();
+                }
+
+                return;
+            }
         }
 
     }
 
 
+}
+
+QPainterPath Blackhole::shape() const
+{
+    /*
+    QPainterPath path;
+
+    path.addEllipse(boundingRect().center(), 30, 30); // Или более точная форма вашего корабля
+    return path;
+*/
 }
 
 
@@ -159,13 +190,14 @@ void Spaceship::advance(int phase) {
                 DeathDialog dialog("СТОЛКНОВЕНИЕ С МЕТЕОРОМ");
                 GameScene obj;
 
-                obj.setPaused(!obj.isPaused);
+                obj.setPaused(true);
                 if (dialog.exec() == QDialog::Accepted) {
                     QCoreApplication::quit();
                 }
 
                 return;
             }
+
         }
 
     }
@@ -212,7 +244,7 @@ void Meteor::advance(int phase) {
     setPos(pos() + velocity);
     // Метеор медленно вращается
     setRotation(rotation() + 0.5);
-    if(pos().x()<-800 or pos().y()<-800 or pos().x() > 1920 or pos().y()>1080){
+    if(pos().x()<-1000 or pos().y()<-1000 or pos().x() > 2320 or pos().y()>1780){
         scene()->removeItem(this);
         delete this;
     }
@@ -264,12 +296,12 @@ void GameScene::StatusBlackHole(bool flag){
     }
 }
 
-void GameScene::StatusMeteorRain(bool flag)
+void GameScene::StatusMeteorRain(int kolvo)
 {
+    int c = 0;
     QPixmap meteorPixmap("meteor.png"); // путь к изображению метеора
-    isMeteorRain = flag;
-     meteorTimer = new QTimer(this);
-    if(isMeteorRain){
+    meteorTimer = new QTimer;
+    if(c<kolvo){
 
         connect(meteorTimer, &QTimer::timeout, this, [this, meteorPixmap]() {
             int pattern = 1;
@@ -286,7 +318,7 @@ void GameScene::StatusMeteorRain(bool flag)
             case 2: // правая
                 x = 2120;
                 if(meteor->velocity.x()>0) meteor->velocity.rx()*=-1;
-                y = QRandomGenerator::global()->bounded(200, 1000);
+                y = QRandomGenerator::global()->bounded(200, 900);
                 break;
             case 3: // верхняя
                 if(meteor->velocity.y()<0) meteor->velocity.ry()*=-1;
@@ -294,8 +326,8 @@ void GameScene::StatusMeteorRain(bool flag)
                 y = -200;
                 break;
             case 4: //нижняя
-                if(meteor->velocity.y()>0) meteor->velocity.rx()*=-1;
-                x = QRandomGenerator::global()->bounded(200, 1900);
+                if(meteor->velocity.y()>0) meteor->velocity.ry()*=-1;
+                x = QRandomGenerator::global()->bounded(100, 1900);
                 y = 1280;
                 break;
 
@@ -303,11 +335,10 @@ void GameScene::StatusMeteorRain(bool flag)
             meteor->setPos(x, y);
             addItem(meteor);
         });
+        c++;
         meteorTimer->start(500);
     }
-    else{
-        meteorTimer->stop();
-    }
+    meteorTimer->stop();
 }
 
 
@@ -331,7 +362,9 @@ GameScene::GameScene(QObject* parent) : QGraphicsScene(parent) {
     spaceship = new Spaceship(normalShip, thrustingShip, normalShipDamaged, thrustingShipDamaged);
     addItem(spaceship);
     spaceship->setPos(960, 540);
-   StatusMeteorRain(true);
+   StatusMeteorRain(100);
+   //StatusMeteorRain(false);
+
     StatusBlackHole(true);
 
 

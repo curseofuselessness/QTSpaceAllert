@@ -48,11 +48,11 @@ public:
 };
 class Blackhole : public QGraphicsPixmapItem {
 public:
-   // void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
+   void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
     Blackhole(const QPixmap& blackholepic);
     void advance(int phase) override;
 
-   // QPainterPath shape() const override;
+    QPainterPath shape() const override;
 
 private:
     QPixmap blackholepic;
@@ -76,7 +76,7 @@ public:
     bool isPaused = false;
     void setPaused(bool);
     void gameOver();
-    void StatusMeteorRain(bool flag);
+    void StatusMeteorRain(int kolvo);
     void StatusBlackHole(bool flag);
 protected:
     void keyPressEvent(QKeyEvent* event) override;
@@ -86,6 +86,7 @@ private:
     bool isBlackHole;
     bool isMeteorRain;
     QTimer* meteorTimer;
+    QTimer* meteorRainTimer;
     Starting_menu* menu_obj;
     Spaceship* spaceship;
     Blackhole* blackhole;
