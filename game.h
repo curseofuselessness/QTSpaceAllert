@@ -12,7 +12,6 @@
 #include <QVBoxLayout>
 #include <QDialog>
 #include <QPropertyAnimation>
-#include <QSoundEffect>
 
 class Starting_menu : public QGraphicsPixmapItem {
 public:
@@ -33,7 +32,6 @@ public:
     void rotateRight();
     QPainterPath shape() const override;
 
-private:
     QPixmap normalPixmapDamaged;
     QPixmap thrustingPixmapDamaged;
     QPixmap normalPixmap;
@@ -67,7 +65,6 @@ public:
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
     QPainterPath shape() const override;
     QPointF velocity;
-    QSoundEffect blast;
 private:
 
     qreal friction = 0.999;

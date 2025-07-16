@@ -3,6 +3,7 @@
 #include <QDebug>
 #include<ctime>
 #include <QRandomGenerator>
+#include <QtMath>
 
 
 
@@ -41,7 +42,18 @@ void Blackhole::advance(int phase) {
     if (!phase) return;
 
     // Черная дыра медленно вращается
-    setRotation(rotation() + 2);
+    setRotation(rotation() + 3);
+    QList<QGraphicsItem*> items = scene()->items();
+    foreach(QGraphicsItem* item, items) {
+        if (Spaceship* ship = dynamic_cast<Spaceship*>(item)) {
+            qreal dx = ship->pos().x()- pos().x();
+            qreal dy = ship->pos().y()- pos().y();
+            qreal distance = qSqrt(dx*dx + dy*dy);
+            QPointF blackhole_velocity(-1*dx, -1*dy);
+            ship->velocity = ship->velocity + 20 / (distance*distance) * blackhole_velocity;
+        }
+
+    }
 
 
 }
@@ -135,7 +147,6 @@ void Spaceship::advance(int phase) {
                     velocity.ry() *= -0.6;
                     qreal speed = qSqrt(velocity.x()*velocity.x() + velocity.y()*velocity.y());
                     if(speed > 6 and deleted == false) {
-                        meteor->blast.play();
                     delete meteor;
                     }
                     if(speed * 7 > 15) HP = HP - speed * 7;
@@ -156,6 +167,7 @@ void Spaceship::advance(int phase) {
                 return;
             }
         }
+
     }
     if(pos().x()<-800 or pos().y()<-800 or pos().x() > 1920 or pos().y()>1080){ // Странно, тут нужно писать -800 так как размер картинки 800
         //qDebug() << "dead";
@@ -183,13 +195,6 @@ Meteor::Meteor(const QPixmap& pixmap) : QGraphicsPixmapItem(pixmap) {
     // Устанавливаем случайное направление и скорость
     qreal angle = QRandomGenerator::global()->bounded(360);
     qreal speed = QRandomGenerator::global()->bounded(30, 60) * 0.1;
-
-    blast.setSource(QUrl::fromLocalFile("asteroid_broken.wav"));
-    if(blast.status() == QSoundEffect::Null) {
-        qDebug() << "Звук не загружен!";
-        return;
-    }
-    blast.setVolume(0.5f);
 
     velocity = QPointF(speed * cos(angle * M_PI / 180),
     speed * sin(angle * M_PI / 180));
