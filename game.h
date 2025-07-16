@@ -12,6 +12,7 @@
 #include <QVBoxLayout>
 #include <QDialog>
 #include <QPropertyAnimation>
+#include <QSoundEffect>
 
 class Starting_menu : public QGraphicsPixmapItem {
 public:
@@ -24,17 +25,21 @@ private:
 };
 class Spaceship : public QGraphicsPixmapItem {
 public:
-    Spaceship(const QPixmap& normal, const QPixmap& thrusting);
+    void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
+    Spaceship(const QPixmap& normal, const QPixmap& thrusting, const QPixmap& normalDamaged, const QPixmap& thrustingDamaged);
     void advance(int phase) override;
     void setThrusting(bool thrusting);
     void rotateLeft();
     void rotateRight();
+    QPainterPath shape() const override;
 
 private:
-
+    QPixmap normalPixmapDamaged;
+    QPixmap thrustingPixmapDamaged;
     QPixmap normalPixmap;
     QPixmap thrustingPixmap;
     QPointF velocity;
+    qreal HP = 100;
     qreal rotation = 0;
     qreal thrust = 0.2;
     qreal targetRotation = 0;
@@ -43,14 +48,28 @@ private:
     qreal friction = 0.999;
     bool thrusting = false;
 };
-
-class Meteor : public QGraphicsPixmapItem {
+class Blackhole : public QGraphicsPixmapItem {
 public:
-    Meteor(const QPixmap& pixmap);
+   // void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
+    Blackhole(const QPixmap& blackholepic);
     void advance(int phase) override;
 
+   // QPainterPath shape() const override;
+
 private:
+    QPixmap blackholepic;
+};
+class Meteor : public QGraphicsPixmapItem {
+public:
+
+    Meteor(const QPixmap& pixmap);
+    void advance(int phase) override;
+    void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
+    QPainterPath shape() const override;
     QPointF velocity;
+    QSoundEffect blast;
+private:
+
     qreal friction = 0.999;
 };
 
@@ -60,15 +79,19 @@ public:
     bool isPaused = false;
     void setPaused(bool);
     void gameOver();
-
+    void StatusMeteorRain(bool flag);
+    void StatusBlackHole(bool flag);
 protected:
     void keyPressEvent(QKeyEvent* event) override;
     void keyReleaseEvent(QKeyEvent* event) override;
 
 private:
-
+    bool isBlackHole;
+    bool isMeteorRain;
+    QTimer* meteorTimer;
     Starting_menu* menu_obj;
     Spaceship* spaceship;
+    Blackhole* blackhole;
     Meteor* meteor; // Добавлен метеор
 };
 

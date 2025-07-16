@@ -1,9 +1,10 @@
-QT       += core gui
+QT       += core gui multimedia
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
 QT += widgets
+
 RESOURCES += resources.qrc \
     resources.qrc \
     resources.qrc
