@@ -1,5 +1,6 @@
 #include "game.h"
 #include "deathdialog.h"
+#include "explosion.h"
 #include <QDebug>
 #include<ctime>
 #include <QRandomGenerator>
@@ -9,13 +10,16 @@
 
 
 bool menu_skiped = false;
+bool dead = false;
+bool first_start = true;
+
 Starting_menu::Starting_menu(const QPixmap &pxmp): Starting_menu_pic(pxmp)
     {
     setPixmap(Starting_menu_pic);
         this->setZValue(10);
     }
 Spaceship::Spaceship(const QPixmap& normal, const QPixmap& thrusting, const QPixmap& normalDamaged, const QPixmap& thrustingDamaged)
-    : normalPixmap(normal), thrustingPixmap(thrusting), normalPixmapDamaged(normalDamaged), thrustingPixmapDamaged(thrustingDamaged)  {
+    : normalPixmapDamaged(normalDamaged), thrustingPixmapDamaged(thrustingDamaged), normalPixmap(normal), thrustingPixmap(thrusting)  {
     if(HP > 40)setPixmap(normalPixmap);
     else setPixmap(normalPixmapDamaged);
 
@@ -35,11 +39,16 @@ void Spaceship::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
 }
 void Blackhole::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+
     QGraphicsPixmapItem::paint(painter, option, widget);
-    QPen *pen = new QPen(Qt::blue);
+    setZValue(4);
+    /*
+QPen *pen = new QPen(Qt::blue);
+
     pen->setWidth(5);
     painter->setPen(*pen);
     painter->drawPath(shape());
+*/
 }
 
 Blackhole::Blackhole(const QPixmap &blackholepic) : QGraphicsPixmapItem(blackholepic)
@@ -60,16 +69,16 @@ void Blackhole::advance(int phase) {
             qreal distance = qSqrt(dx*dx + dy*dy);
             QPointF blackhole_velocity(-1*dx, -1*dy);
             ship->velocity = ship->velocity +  30 / (distance * distance) * blackhole_velocity;
-            if (collidesWithItem(ship)) {
+            if (collidesWithItem(ship) and dead == false) {
                 DeathDialog dialog("ЗАСОСАЛО В ЧЕРНУЮ ДЫРУ");
                 GameScene obj;
-
+                dead = true;
 
                 obj.setPaused(true);
                 if (dialog.exec() == QDialog::Accepted) {
                     QCoreApplication::quit();
                 }
-
+                QCoreApplication::quit();
                 return;
             }
         }
@@ -81,12 +90,12 @@ void Blackhole::advance(int phase) {
 
 QPainterPath Blackhole::shape() const
 {
-    /*
+
     QPainterPath path;
 
     path.addEllipse(boundingRect().center(), 30, 30); // Или более точная форма вашего корабля
     return path;
-*/
+
 }
 
 
@@ -109,14 +118,37 @@ void GameScene::setPaused(bool paused) {
 
         foreach (QTimer *timer, findChildren<QTimer*>()) {
             timer->stop();
-            meteorTimer->stop();
+
         }
     } else {
         // Возобновляем таймеры
         foreach (QTimer *timer, findChildren<QTimer*>()) {
 
             timer->start(16);
-            meteorTimer->start(500);
+            if(timer == event_timer){
+                event_timer->start(10000);
+            }
+                /*
+            if(timer == event_timer and !first_start)event_timer->start(30000);
+            if(timer == event_timer and first_start){
+                first_start = false;
+                event_timer->start();
+                event_timer->stop();
+                //event_timer->start(30000);
+
+            }
+*/
+            if(timer == meteorTimer) meteorTimer->start(meteordelay);
+            if(timer == blackholeTimer and event == 2)
+            {
+                blackholeTimer->start(blackholedelay);
+
+            }
+
+
+                //
+            //
+
         }
     }
 }
@@ -130,7 +162,7 @@ void Spaceship::advance(int phase) {
     if (!phase) return;
 
     setRotation(rotation);
-    qDebug() << "Scene rect:" << pos();
+
     if (thrusting) {
         if(HP > 40 )setPixmap(thrustingPixmap);
         else setPixmap(thrustingPixmapDamaged);
@@ -186,30 +218,36 @@ void Spaceship::advance(int phase) {
 
 
                  }
-            if(HP<=0){
+            if(HP<=0 and dead == false){
+                     // Использование:
+                     AnimatedExplosion* explosion = new AnimatedExplosion(this->pos());
+                     //explosion->setRadius(200);
+                     scene()->addItem(explosion);
+                     delete this;
                 DeathDialog dialog("СТОЛКНОВЕНИЕ С МЕТЕОРОМ");
                 GameScene obj;
-
-                obj.setPaused(true);
+                dead = true;
+              //  obj.setPaused(true);
                 if (dialog.exec() == QDialog::Accepted) {
                     QCoreApplication::quit();
                 }
-
+                QCoreApplication::quit();
                 return;
             }
 
         }
 
     }
-    if(pos().x()<-800 or pos().y()<-800 or pos().x() > 1920 or pos().y()>1080){ // Странно, тут нужно писать -800 так как размер картинки 800
+    if((pos().x()<-800 or pos().y()<-800 or pos().x() > 1920 or pos().y()>1080) and dead == false){ // Странно, тут нужно писать -800 так как размер картинки 800
         //qDebug() << "dead";
         DeathDialog dialog("ПОТЕРЯН В КОСМОСЕ");
         GameScene obj;
-
+        dead = true;
         obj.setPaused(!obj.isPaused);
         if (dialog.exec() == QDialog::Accepted) {
             QCoreApplication::quit();
         }
+        QCoreApplication::quit();
 
 
 
@@ -281,31 +319,39 @@ void Spaceship::rotateRight() {
      rotation += rotationSpeed;
 }
 
-void GameScene::StatusBlackHole(bool flag){
+void GameScene::StatusBlackHole(int delay){
   QPixmap blackholepic("blackhole.png");
-    isBlackHole = flag;
-  if(isBlackHole){
+
+
         blackhole = new Blackhole(blackholepic);
       blackhole->setZValue(4);
-        blackhole->setPos(QRandomGenerator::global()->bounded(200, 1600), QRandomGenerator::global()->bounded(200, 900));
-        addItem(blackhole);
+        qreal x =  qAbs(spaceship->pos().x() - 960);
+      qreal y = qAbs(spaceship->pos().y() - 540);
 
-  }
-  else{
-     // delete blackhole;
-    }
+        blackhole->setPos(x, y);
+        addItem(blackhole);
+        QTimer* blackholeTimer = new QTimer(this);
+        blackholeTimer->setSingleShot(true);
+        blackholeTimer->start(blackholedelay);
+
+        connect(blackholeTimer, &QTimer::timeout, this, [this]() {
+            delete blackhole;
+        });
+
+
 }
 
-void GameScene::StatusMeteorRain(int kolvo)
+void GameScene::StatusMeteorRain(int kolvo, int delay)
 {
-    int c = 0;
+
     QPixmap meteorPixmap("meteor.png"); // путь к изображению метеора
     meteorTimer = new QTimer;
-    if(c<kolvo){
+    int temp_kolvo = kolvo;
 
-        connect(meteorTimer, &QTimer::timeout, this, [this, meteorPixmap]() {
+        connect(meteorTimer, &QTimer::timeout, this, [this, meteorPixmap, temp_kolvo]() {
             int pattern = 1;
-            pattern = QRandomGenerator::global()->bounded(1, 4);
+            static int c = 0;
+            pattern = QRandomGenerator::global()->bounded(1, 5);
             meteor = new Meteor(meteorPixmap);
             qreal x = 0;
             qreal y = 0;
@@ -331,14 +377,23 @@ void GameScene::StatusMeteorRain(int kolvo)
                 y = 1280;
                 break;
 
+
+            }
+            c++;
+            qDebug() << c << " " << temp_kolvo;
+            if(c>temp_kolvo){
+                c=0;
+                 meteorTimer->stop();
             }
             meteor->setPos(x, y);
             addItem(meteor);
+
+
         });
-        c++;
-        meteorTimer->start(500);
-    }
-    meteorTimer->stop();
+
+        meteorTimer->start(delay);
+
+
 }
 
 
@@ -362,10 +417,27 @@ GameScene::GameScene(QObject* parent) : QGraphicsScene(parent) {
     spaceship = new Spaceship(normalShip, thrustingShip, normalShipDamaged, thrustingShipDamaged);
     addItem(spaceship);
     spaceship->setPos(960, 540);
-   StatusMeteorRain(100);
-   //StatusMeteorRain(false);
 
-    StatusBlackHole(true);
+   //StatusMeteorRain(false);
+   event_timer = new QTimer(this);
+   connect(event_timer, &QTimer::timeout, this, [this]() {
+     event = QRandomGenerator::global()->bounded(1, 3);
+       qDebug() << event;
+       switch(event){
+       case 1:
+           meteordelay = 500;
+           StatusMeteorRain(20, meteordelay);
+           break;
+       case 2:
+           meteordelay = 1000;
+            StatusMeteorRain(10, meteordelay);
+           blackholedelay = 10000;
+           StatusBlackHole(blackholedelay);
+           blackhole->setZValue(5);
+           break;
+       }
+   });
+  // event_timer->start(10000);
 
 
 
@@ -400,7 +472,6 @@ void GameScene::keyPressEvent(QKeyEvent* event) {
     case Qt::Key_Left: spaceship->rotateLeft(); break;
     case Qt::Key_Right: spaceship->rotateRight(); break;
     case Qt::Key_Space: spaceship->setThrusting(true); break;
-    case Qt::Key_Escape: setPaused(!isPaused); break;
     }
 }
 

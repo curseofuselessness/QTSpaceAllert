@@ -76,14 +76,18 @@ public:
     bool isPaused = false;
     void setPaused(bool);
     void gameOver();
-    void StatusMeteorRain(int kolvo);
-    void StatusBlackHole(bool flag);
+    void StatusMeteorRain(int kolvo, int delay);
+    void StatusBlackHole(int delay);
 protected:
     void keyPressEvent(QKeyEvent* event) override;
     void keyReleaseEvent(QKeyEvent* event) override;
 
 private:
-    bool isBlackHole;
+    int event;
+    int blackholedelay;
+    int meteordelay;
+    QTimer* event_timer;
+    QTimer* blackholeTimer;
     bool isMeteorRain;
     QTimer* meteorTimer;
     QTimer* meteorRainTimer;

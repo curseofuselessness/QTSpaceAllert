@@ -18,6 +18,7 @@ SOURCES += \
 
 HEADERS += \
     deathdialog.h \
+    explosion.h \
     game.h
 
 FORMS += \
