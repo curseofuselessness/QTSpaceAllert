@@ -37,7 +37,7 @@ public:
     QPixmap normalPixmap;
     QPixmap thrustingPixmap;
     QPointF velocity;
-    qreal HP = 100;
+    qreal HP = 10000;
     qreal rotation = 0;
     qreal thrust = 0.2;
     qreal targetRotation = 0;

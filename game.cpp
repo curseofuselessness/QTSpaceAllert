@@ -325,10 +325,16 @@ void GameScene::StatusBlackHole(int delay){
 
         blackhole = new Blackhole(blackholepic);
       blackhole->setZValue(4);
-        qreal x =  qAbs(spaceship->pos().x() - 960);
-      qreal y = qAbs(spaceship->pos().y() - 540);
+        QPointF p1(480, 270), p2(1390, 270), p3(1390, 810), p4(480, 810);
+      qreal x =  spaceship->pos().x();
+        qreal y = spaceship->pos().y();
+      blackhole->setTransformOriginPoint(blackhole->boundingRect().center());
+              if(x>0 and x<960 and y>0 and y< 540)blackhole->setPos(p2);
+              if(x>960 and x<1920 and y>0 and y< 540)blackhole->setPos(p1);
+              if(x>0 and x<960 and y>540 and y< 1080)blackhole->setPos(p3);
+              if(x>960 and x<1920 and y>540 and y< 1080)blackhole->setPos(p4);
 
-        blackhole->setPos(x, y);
+
         addItem(blackhole);
         QTimer* blackholeTimer = new QTimer(this);
         blackholeTimer->setSingleShot(true);
